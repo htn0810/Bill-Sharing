@@ -25,7 +25,15 @@ export const billsService = {
   },
 
   async updateBillStatus(billId: number, status: string): Promise<void> {
-    const docRef = doc(db, COLLECTION_NAME, billId.toString());
+    const q = query(collection(db, COLLECTION_NAME), where("id", "==", billId));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.error(`Bill ${billId} not found`);
+      return;
+    }
+
+    const docRef = doc(db, COLLECTION_NAME, querySnapshot.docs[0].id);
     await updateDoc(docRef, {
       status: status,
       completedAt: new Date().toISOString(),
@@ -45,7 +53,6 @@ export const billsService = {
       }
 
       const doc = querySnapshot.docs[0];
-      console.log(doc.data());
       return { ...doc.data() } as TBill;
     } catch (error) {
       console.error("Error getting bill by name:", error);

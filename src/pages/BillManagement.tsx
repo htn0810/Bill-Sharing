@@ -1,49 +1,40 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { BillStatus, TBill, TCategory, TExpense } from "@/ProjectType";
+import { BillStatus, TBill, TExpense } from "@/ProjectType";
 import { useNavigate, useParams } from "react-router";
 import { billsService } from "@/services/billsService";
-import { categoryService } from "@/services/categoryService";
-import { formatBalance, formatVND } from "@/utils/utils";
+import { formatBalance } from "@/utils/utils";
 import ExpenseItem from "@/modules/expense-item/ExpenseItem";
+import AddExpense from "@/modules/add-expense/AddExpense";
+import { expenseService } from "@/services/expenseService";
 
 const BillManagement = () => {
   const { billId } = useParams();
-  const InitialExpense = {
-    id: Date.now(),
-    billId: parseInt(billId!),
-    description: "",
-    amount: "",
-    paidBy: "",
-    category: "",
-    date: new Date().toISOString().split("T")[0],
-  };
-
   const navigate = useNavigate();
   const [bill, setBill] = useState<TBill>();
-  const [categories, setCategories] = useState<TCategory[]>([]);
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [expenses, setExpenses] = useState<TExpense[]>([]);
-  const [newExpense, setNewExpense] = useState<TExpense>(InitialExpense);
 
   useEffect(() => {
     fetchBill();
-    fetchCategories();
+    fetchExpenses();
   }, [billId]);
-
-  const fetchCategories = async () => {
-    const categories = await categoryService.getAllCategories();
-    setCategories(categories);
-  };
 
   const fetchBill = async () => {
     if (billId) {
       const billData = await billsService.getBillById(billId);
-      console.log(billData);
       setBill(billData!);
+    }
+  };
+
+  const fetchExpenses = async () => {
+    if (billId) {
+      const billExpenses = await expenseService.getExpensesByBillId(
+        parseInt(billId!)
+      );
+      setExpenses(billExpenses);
     }
   };
 
@@ -53,18 +44,6 @@ const BillManagement = () => {
       navigate("/");
     } catch (error) {
       console.error("Error completing bill:", error);
-    }
-  };
-
-  const addExpense = () => {
-    if (
-      newExpense.description &&
-      newExpense.amount &&
-      newExpense.paidBy &&
-      newExpense.category
-    ) {
-      setExpenses([...expenses, { ...newExpense, id: Date.now() }]);
-      setNewExpense(InitialExpense);
     }
   };
 
@@ -94,24 +73,6 @@ const BillManagement = () => {
 
   const balances = calculateBalances();
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    // Remove all non-numeric characters
-    const numericValue = input.replace(/[^0-9]/g, "");
-
-    // Store raw number in state
-    setNewExpense({
-      ...newExpense,
-      amount: numericValue,
-    });
-
-    // Set cursor position after the number
-    const cursorPos = e.target.selectionStart || 0;
-    setTimeout(() => {
-      e.target.setSelectionRange(cursorPos, cursorPos);
-    }, 0);
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-2 sm:p-4">
       <Card>
@@ -138,83 +99,23 @@ const BillManagement = () => {
         </CardHeader>
         <CardContent className="p-3 sm:p-6 space-y-6">
           {showAddExpense && (
-            <div className="border rounded-lg p-3 space-y-3">
-              <Input
-                type="text"
-                placeholder="Description"
-                value={newExpense.description}
-                onChange={(e) =>
-                  setNewExpense({
-                    ...newExpense,
-                    description: e.target.value,
-                  })
-                }
-                className="w-full"
-              />
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={newExpense.amount ? formatVND(newExpense.amount) : ""}
-                  onChange={handleAmountChange}
-                  className="flex-1"
-                  placeholder="Amount"
-                />
-                <select
-                  value={newExpense.paidBy}
-                  onChange={(e) =>
-                    setNewExpense({ ...newExpense, paidBy: e.target.value })
-                  }
-                  className="flex-1 border rounded-md px-3 py-1"
-                >
-                  <option value="">Paid by</option>
-                  {bill?.members.map((roommate) => (
-                    <option key={roommate} value={roommate}>
-                      {roommate}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  type="date"
-                  value={newExpense.date}
-                  onChange={(e) =>
-                    setNewExpense({ ...newExpense, date: e.target.value })
-                  }
-                  className="flex-1"
-                />
-                <select
-                  value={newExpense.category}
-                  onChange={(e) =>
-                    setNewExpense({ ...newExpense, category: e.target.value })
-                  }
-                  className="flex-1 border rounded-md px-3 py-1 cursor-pointer"
-                >
-                  <option value="">Categories</option>
-                  {categories.map((category) => (
-                    <option key={category.name} value={category.name}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Button
-                onClick={() => {
-                  addExpense();
-                  setShowAddExpense(false);
-                }}
-                className="w-full bg-black text-white hover:bg-gray-800 cursor-pointer"
-              >
-                Add Expense
-              </Button>
-            </div>
+            <AddExpense
+              bill={bill!}
+              onShowAddExpense={setShowAddExpense}
+              setExpenses={setExpenses}
+            />
           )}
 
           <div className="space-y-3">
             <h3 className="font-semibold">Recent Expenses</h3>
             <div className="overflow-auto max-h-[50vh] space-y-4">
               {expenses.map((expense) => (
-                <ExpenseItem expense={expense} deleteExpense={deleteExpense} />
+                <ExpenseItem
+                  expense={expense}
+                  deleteExpense={deleteExpense}
+                  billStatus={bill!.status}
+                  key={expense.id + expense.description}
+                />
               ))}
             </div>
           </div>
