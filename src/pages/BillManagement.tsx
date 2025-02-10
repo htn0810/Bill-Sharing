@@ -17,6 +17,7 @@ import { formatBalance } from "@/utils/utils";
 import ExpenseItem from "@/modules/expense-item/ExpenseItem";
 import AddExpense from "@/modules/add-expense/AddExpense";
 import { expenseService } from "@/services/expenseService";
+import { toast } from "sonner";
 
 const BillManagement = () => {
   const { billId } = useParams();
@@ -62,7 +63,12 @@ const BillManagement = () => {
   };
 
   const deleteExpense = (id: number) => {
-    setExpenses(expenses.filter((expense) => expense.id !== id));
+    try {
+      expenseService.deleteExpenseById(id);
+      setExpenses(expenses.filter((expense) => expense.id !== id));
+    } catch (error) {
+      toast.error("Error deleting expense");
+    }
   };
 
   const calculateBalances = () => {
