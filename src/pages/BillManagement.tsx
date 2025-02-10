@@ -19,6 +19,7 @@ import AddExpense from "@/modules/add-expense/AddExpense";
 import { expenseService } from "@/services/expenseService";
 import { toast } from "sonner";
 import SpendingStatistics from "@/modules/spending-statistics/SpendingStatistics";
+import CategoryStatistics from "@/modules/category-statistics/CategoryStatistics";
 
 const BillManagement = () => {
   const { billId } = useParams();
@@ -215,9 +216,14 @@ const BillManagement = () => {
         </CardContent>
       </Card>
 
-      {bill && expenses.length > 0 && (
-        <SpendingStatistics expenses={expenses} members={bill.members} />
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {bill && expenses.length > 0 && (
+          <>
+            <SpendingStatistics expenses={expenses} members={bill.members} />
+            <CategoryStatistics expenses={expenses} />
+          </>
+        )}
+      </div>
     </div>
   );
 };
