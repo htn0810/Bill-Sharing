@@ -18,6 +18,7 @@ import ExpenseItem from "@/modules/expense-item/ExpenseItem";
 import AddExpense from "@/modules/add-expense/AddExpense";
 import { expenseService } from "@/services/expenseService";
 import { toast } from "sonner";
+import SpendingStatistics from "@/modules/spending-statistics/SpendingStatistics";
 
 const BillManagement = () => {
   const { billId } = useParams();
@@ -101,7 +102,7 @@ const BillManagement = () => {
   const balances = calculateBalances();
 
   return (
-    <div className="max-w-4xl mx-auto p-2 sm:p-4">
+    <div className="max-w-4xl mx-auto p-2 sm:p-4 space-y-4">
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="bg-white">
           <DialogHeader />
@@ -213,6 +214,10 @@ const BillManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {bill && expenses.length > 0 && (
+        <SpendingStatistics expenses={expenses} members={bill.members} />
+      )}
     </div>
   );
 };
