@@ -5,6 +5,7 @@ export enum BillStatus {
 
 export type TBill = {
   id: number;
+  name: string;
   status: BillStatus;
   createdAt: string;
   completedAt?: string;
@@ -14,8 +15,14 @@ export type TBill = {
 
 export type TExpense = {
   id: number;
+  billId: number;
   description: string;
   amount: string;
   paidBy: string;
+  category: string;
   date: string;
+};
+
+export type TCategory = {
+  name: string;
 };
