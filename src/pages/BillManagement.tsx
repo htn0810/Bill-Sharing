@@ -102,6 +102,10 @@ const BillManagement = () => {
 
   const balances = calculateBalances();
 
+  const sortedExpenses = [...expenses].sort((a, b) => {
+    return new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime();
+  });
+
   return (
     <div className="max-w-4xl mx-auto p-2 sm:p-4 space-y-4">
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -183,7 +187,7 @@ const BillManagement = () => {
           <div className="space-y-3">
             <h3 className="font-semibold">Recent Expenses</h3>
             <div className="overflow-auto max-h-[50vh] space-y-4">
-              {expenses.map((expense) => (
+              {sortedExpenses.map((expense) => (
                 <ExpenseItem
                   expense={expense}
                   deleteExpense={deleteExpense}

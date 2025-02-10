@@ -135,7 +135,7 @@ const AddExpense = (props: Props) => {
 
     expenseService.createExpense(newExpense);
 
-    setExpenses((prev) => [...prev, { ...newExpense, id: Date.now() }]);
+    setExpenses((prev) => [{ ...newExpense, id: Date.now() }, ...prev]);
     setNewExpense(InitialExpense);
     onShowAddExpense(false);
     setInputErrors({
