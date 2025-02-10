@@ -65,7 +65,6 @@ const CategoryStatistics = ({ expenses }: CategoryStatisticsProps) => {
     innerRadius,
     outerRadius,
     value,
-    index,
   }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
